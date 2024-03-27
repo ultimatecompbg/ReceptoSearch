@@ -64,4 +64,8 @@ public class RecipeListAdapter extends RecyclerView.Adapter<RecipeListAdapter.Re
     public interface OnRecipeClickListener {
         void onRecipeClick(Recipe recipe);
     }
+    public void setRecipes(List<Recipe> recipes) {
+        this.recipes = recipes;
+        notifyDataSetChanged();
+    }
 }
