@@ -7,7 +7,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 
 public interface RecipeService {
-    @GET("recipes/search")
+    @GET("recipes/complexSearch")
     Call<RecipeResponse> getRecipes(
             @Query("query") String query,
             @Query("apiKey") String apiKey
