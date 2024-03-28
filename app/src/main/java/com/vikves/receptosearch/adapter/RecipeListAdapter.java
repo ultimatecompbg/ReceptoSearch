@@ -1,5 +1,4 @@
 package com.vikves.receptosearch.adapter;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,7 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.squareup.picasso.Picasso;
 import com.vikves.receptosearch.R;
 import com.vikves.receptosearch.model.Recipe;
 
@@ -22,25 +21,17 @@ public class RecipeListAdapter extends RecyclerView.Adapter<RecipeListAdapter.Re
         this.listener = listener;
     }
 
-    public static class RecipeViewHolder extends RecyclerView.ViewHolder {
-        private TextView titleTextView;
-        private ImageView thumbnailImageView;
+    public interface OnRecipeClickListener {
+        void onRecipeClick(Recipe recipe);
+    }
 
-        public RecipeViewHolder(View itemView) {
-            super(itemView);
-            titleTextView = itemView.findViewById(R.id.titleTextView);
-            thumbnailImageView = itemView.findViewById(R.id.thumbnailImageView);
-        }
+    public void setRecipes(List<Recipe> recipes) {
+        this.recipes = recipes;
+        notifyDataSetChanged();
+    }
 
-        public void bind(final Recipe recipe, final OnRecipeClickListener listener) {
-            titleTextView.setText(recipe.getTitle());
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onRecipeClick(recipe);
-                }
-            });
-        }
+    public void setOnRecipeClickListener(OnRecipeClickListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -53,7 +44,14 @@ public class RecipeListAdapter extends RecyclerView.Adapter<RecipeListAdapter.Re
     @Override
     public void onBindViewHolder(@NonNull RecipeViewHolder holder, int position) {
         Recipe recipe = recipes.get(position);
-        holder.bind(recipe, listener);
+        holder.titleTextView.setText(recipe.getTitle());
+        Picasso.get().load(recipe.getImageUrl()).into(holder.thumbnailImageView);
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onRecipeClick(recipe);
+            }
+        });
     }
 
     @Override
@@ -61,11 +59,15 @@ public class RecipeListAdapter extends RecyclerView.Adapter<RecipeListAdapter.Re
         return recipes.size();
     }
 
-    public interface OnRecipeClickListener {
-        void onRecipeClick(Recipe recipe);
-    }
-    public void setRecipes(List<Recipe> recipes) {
-        this.recipes = recipes;
-        notifyDataSetChanged();
+    static class RecipeViewHolder extends RecyclerView.ViewHolder {
+        ImageView thumbnailImageView;
+        TextView titleTextView;
+
+        public RecipeViewHolder(@NonNull View itemView) {
+            super(itemView);
+            thumbnailImageView = itemView.findViewById(R.id.thumbnailImageView);
+            titleTextView = itemView.findViewById(R.id.titleTextView);
+        }
     }
 }
+
