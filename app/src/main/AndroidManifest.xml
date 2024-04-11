@@ -31,6 +31,8 @@
             android:label="Recipe Detail">
             <!-- Add any intent filters if needed -->
         </activity>
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".RegisterActivity" />
     </application>
 
 </manifest>

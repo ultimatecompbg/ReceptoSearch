@@ -1,22 +1,31 @@
 package com.vikves.receptosearch;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.Spinner;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.vikves.receptosearch.RecipeDetailActivity;
 import com.vikves.receptosearch.adapter.RecipeListAdapter;
 import com.vikves.receptosearch.db.DBHelper;
 import com.vikves.receptosearch.model.Recipe;
 import com.vikves.receptosearch.response.RecipeResponse;
 import com.vikves.receptosearch.service.RecipeService;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -26,19 +35,18 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity implements RecipeListAdapter.OnRecipeClickListener {
-
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private RecyclerView recyclerView;
     private RecipeListAdapter adapter;
     private RecipeService recipeService;
     private DBHelper dbHelper;
+    private Button logoutButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         dbHelper = new DBHelper(this);
 
         // Check if the user is logged in
@@ -46,13 +54,35 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
             // User is not logged in, redirect to LoginActivity
             startActivity(new Intent(this, LoginActivity.class));
             finish();
-            return; // Ensure that no further code is executed if user is not logged in
         }
 
-        // Initialize RecyclerView
+        Spinner spinner = findViewById(R.id.spinner);
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
+                R.array.recipe_options, android.R.layout.simple_spinner_item);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(spinnerAdapter);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedOption = parent.getItemAtPosition(position).toString();
+                fetchRecipes(selectedOption.toLowerCase()); // Assuming API endpoints are lowercase
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Do nothing
+            }
+
+        });
+        logoutButton = findViewById(R.id.logoutButton);
+        logoutButton.setOnClickListener(v -> {
+            logout(); // Call logout method when button is clicked
+        });
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new RecipeListAdapter(new ArrayList<>(), this);
+        adapter.setOnRecipeClickListener(this);
         recyclerView.setAdapter(adapter);
 
         Gson gson = new GsonBuilder()
@@ -60,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
                 .create();
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 
-        // Add OkHttp logging interceptor
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         httpClient.addInterceptor(loggingInterceptor);
@@ -71,11 +100,10 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
-        // Initialize RecipeService
         recipeService = retrofit.create(RecipeService.class);
 
-        // Fetch recipes from Spoonacular API
-        fetchRecipes("pasta");
+        fetchRecipes("pasta"); // Default to pasta recipes on startup
+
     }
 
     private void fetchRecipes(String query) {
@@ -89,10 +117,10 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
                         List<Recipe> recipes = recipeResponse.getResults();
                         adapter.setRecipes(recipes);
                     } else {
-                        Log.e(TAG, "Response is null or empty");
+                        Log.e(TAG, "Empty response or null recipes received");
                     }
                 } else {
-                    Log.e(TAG, "Failed to fetch recipes: " + response.message());
+                    Log.e(TAG, "Response not successful: " + response.message());
                 }
             }
 
@@ -108,5 +136,18 @@ public class MainActivity extends AppCompatActivity implements RecipeListAdapter
         Intent intent = new Intent(this, RecipeDetailActivity.class);
         intent.putExtra("recipe", recipe);
         startActivity(intent);
+    }
+    private void logout() {
+
+        SharedPreferences preferences = getSharedPreferences("user_session", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("is_logged_in", false);
+        editor.apply();
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+
+        // Add flags to clear the back stack and prevent the user from navigating back to MainActivity
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }

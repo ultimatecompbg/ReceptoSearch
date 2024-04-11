@@ -16,7 +16,7 @@ import com.vikves.receptosearch.db.DBHelper;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText usernameEditText, passwordEditText;
-    private Button loginButton;
+    private Button loginButton, registerButton;
 
     private DBHelper dbHelper;
 
@@ -30,6 +30,7 @@ public class LoginActivity extends AppCompatActivity {
         usernameEditText = findViewById(R.id.usernameEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         loginButton = findViewById(R.id.loginButton);
+        registerButton = findViewById(R.id.registerButton);
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,6 +47,13 @@ public class LoginActivity extends AppCompatActivity {
                     // Login failed
                     Toast.makeText(LoginActivity.this, "Invalid username or password", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+        registerButton.setOnClickListener(new View.OnClickListener() { // Setting onClick listener for registerButton
+            @Override
+            public void onClick(View v) {
+                // Open RegisterActivity when registerButton is clicked
+                startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
             }
         });
     }

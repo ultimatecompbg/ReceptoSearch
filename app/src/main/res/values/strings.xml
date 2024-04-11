@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Recipe Finder</string>
+    <string-array name="recipe_options">
+        <item>Pasta</item>
+        <item>Pizza</item>
+        <item>Turkish</item>
+    </string-array>
 </resources>
