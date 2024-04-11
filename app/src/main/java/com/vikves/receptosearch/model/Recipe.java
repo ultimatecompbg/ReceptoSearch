@@ -3,27 +3,30 @@ package com.vikves.receptosearch.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Recipe implements Parcelable {
-    private int id;
-    private String title;
-    private String imageUrl;
-    private String ingredients;
-    private String instructions;
+import com.google.gson.annotations.SerializedName;
 
-    public Recipe(int id, String title, String imageUrl, String ingredients, String instructions) {
+public class Recipe implements Parcelable {
+    @SerializedName("id")
+    private int id;
+
+    @SerializedName("title")
+    private String title;
+
+    @SerializedName("image")
+    private String imageUrl;
+
+    public Recipe(int id, String title, String imageUrl) {
         this.id = id;
         this.title = title;
         this.imageUrl = imageUrl;
-        this.ingredients = ingredients;
-        this.instructions = instructions;
+
     }
 
     protected Recipe(Parcel in) {
         id = in.readInt();
         title = in.readString();
         imageUrl = in.readString();
-        ingredients = in.readString();
-        instructions = in.readString();
+
     }
 
     public static final Creator<Recipe> CREATOR = new Creator<Recipe>() {
@@ -50,13 +53,6 @@ public class Recipe implements Parcelable {
         return imageUrl;
     }
 
-    public String getIngredients() {
-        return ingredients;
-    }
-
-    public String getInstructions() {
-        return instructions;
-    }
 
     @Override
     public int describeContents() {
@@ -68,7 +64,6 @@ public class Recipe implements Parcelable {
         dest.writeInt(id);
         dest.writeString(title);
         dest.writeString(imageUrl);
-        dest.writeString(ingredients);
-        dest.writeString(instructions);
+
     }
 }

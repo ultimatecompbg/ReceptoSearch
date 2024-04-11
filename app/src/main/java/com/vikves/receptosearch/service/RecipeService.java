@@ -11,5 +11,8 @@ public interface RecipeService {
     Call<RecipeResponse> getRecipes(
             @Query("query") String query,
             @Query("apiKey") String apiKey
+
+
+
     );
 }
